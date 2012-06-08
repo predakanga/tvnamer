@@ -954,8 +954,9 @@ class Renamer(object):
 
     def __init__(self, filename):
         self.filename = os.path.abspath(filename)
+        self.srcFilename = None
 
-    def newName(self, newName, force = False):
+    def newName(self, newName, force = False, reallyMove = True):
         """Renames a file, keeping the path the same.
         """
         filepath, filename = os.path.split(self.filename)
@@ -969,9 +970,49 @@ class Renamer(object):
                 raise OSError("File %s already exists, not forcefully renaming %s" % (
                     newpath, self.filename))
 
-        os.rename(self.filename, newpath)
+        if reallyMove:
+            os.rename(self.filename, newpath)
+        else:
+            self.srcFilename = self.filename
+        
         self.filename = newpath
 
+    def linkPath(self, new_path = None, new_fullpath = None, force = False, always_copy = False, always_move = False, create_dirs = True, getPathPreview = False):
+        # Implement getPathPreview, just to respect the API
+        if getPathPreview:
+            return self.newPath(new_path, new_fullpath, force, always_copy, always_move, create_dirs, getPathPreview)
+        
+        # Grab the pathPreview from newPath to determine where we need to link to
+        new_fullpath = self.newPath(new_path, new_fullpath, force, always_copy, always_move, create_dirs, True)
+        new_dir = os.path.dirname(new_fullpath)
+        # And then restore our faked filename, if one exists
+        if self.srcFilename is not None:
+            self.filename = self.srcFilename
+            self.srcFilename = None
+        
+        if create_dirs:
+            p("Creating directory %s" % new_dir)
+            try:
+                os.makedirs(new_dir)
+            except OSError, e:
+                if e.errno != 17:
+                    raise
+        
+        if os.path.exists(new_fullpath):
+            if not force:
+                raise OSError("File %s already exists, not forcefully linking %s" % (
+                    new_fullpath, self.filename))
+            else:
+                p("Deleting %s" % (new_fullpath))
+                os.unlink(new_fullpath)
+        
+        # Finally, create the link
+        p("Linking %s to %s" % (self.filename, new_fullpath))
+        os.path.link(self.filename, new_fullpath)
+        
+        # And update the filename
+        self.filename = new_fullpath
+        
     def newPath(self, new_path = None, new_fullpath = None, force = False, always_copy = False, always_move = False, create_dirs = True, getPathPreview = False):
         """Moves the file to a new path.
 
@@ -1022,6 +1063,11 @@ class Renamer(object):
                 if e.errno != 17:
                     raise
 
+        # For atomic move, restore self.filename to it's real value here
+        if self.srcFilename is not None:
+            self.filename = self.srcFilename
+            self.srcFilename = None
+        
         if os.path.isfile(new_fullpath):
             # If the destination exists, raise exception unless force is True
             if not force:

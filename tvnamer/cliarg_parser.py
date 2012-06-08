@@ -73,7 +73,13 @@ def getCommandlineParser(defaults):
 
         g.add_option("-m", "--move", action="store_true", dest="move_files_enable", help = "Move files to destination specified in config or with --movedestination argument")
         g.add_option("--not-move", action="store_false", dest="move_files_enable", help = "Files will remain in current directory")
-
+        
+        g.add_option("-l", "--link", action="store_true", dest="link_files_enable", help = "Hard-link files to destination specified in config or with --movedestination argument")
+        g.add_option("--not-link", action="store_false", dest="link_files_enable", help = "Files will not be hard-linked to their destination (default)")
+        
+        g.add_option("--atomic-move", action="store_true", dest="atomic_move", help = "Move files atomically (no renaming prior to moving)")
+        g.add_option("--not-atomic-move", action="store_false", dest="atomic_move", help = "Rename files before moving them")
+        
         g.add_option("-d", "--movedestination", action="store", dest = "move_files_destination", help = "Destination to move files to. Variables: %(seriesname)s %(seasonnumber)d %(episodenumbers)s")
 
         g.add_option("-h", "--help", action="help", help = "show this help message and exit")

@@ -88,7 +88,7 @@ def doRenameFile(cnamer, newName):
     newName should be string containing new filename.
     """
     try:
-        cnamer.newName(newName, force = Config['overwrite_destination_on_rename'])
+        cnamer.newName(newName, force = Config['overwrite_destination_on_rename'], reallyMove = !Config['atomic_move'])
     except OSError, e:
         warn(e)
 
@@ -100,19 +100,27 @@ def doMoveFile(cnamer, destDir = None, destFilepath = None, getPathPreview = Fal
     if (destDir is None and destFilepath is None) or (destDir is not None and destFilepath is not None):
         raise ValueError("Specify only destDir or destFilepath")
 
-    if not Config['move_files_enable']:
+    if not (Config['move_files_enable'] or Config['link_files_enable']):
         raise ValueError("move_files feature is disabled but doMoveFile was called")
 
     if Config['move_files_destination'] is None:
         raise ValueError("Config value for move_files_destination cannot be None if move_files_enabled is True")
 
     try:
-        return cnamer.newPath(
-            new_path = destDir,
-            new_fullpath = destFilepath,
-            always_move = Config['always_move'],
-            getPathPreview = getPathPreview,
-            force = Config['overwrite_destination_on_move'])
+        if Config['link_files_enable']:
+            return cnamer.linkPath(
+                new_path = destDir,
+                new_fullpath = destFilepath,
+                always_move = Config['always_move'],
+                getPathPreview = getPathPreview,
+                force = Config['overwrite_destination_on_move'])
+        else:
+            return cnamer.newPath(
+                new_path = destDir,
+                new_fullpath = destFilepath,
+                always_move = Config['always_move'],
+                getPathPreview = getPathPreview,
+                force = Config['overwrite_destination_on_move'])
 
     except OSError, e:
         warn(e)
