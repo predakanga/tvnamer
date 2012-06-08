@@ -1008,7 +1008,7 @@ class Renamer(object):
         
         # Finally, create the link
         p("Linking %s to %s" % (self.filename, new_fullpath))
-        os.path.link(self.filename, new_fullpath)
+        os.link(self.filename, new_fullpath)
         
         # And update the filename
         self.filename = new_fullpath

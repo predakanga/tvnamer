@@ -88,7 +88,7 @@ def doRenameFile(cnamer, newName):
     newName should be string containing new filename.
     """
     try:
-        cnamer.newName(newName, force = Config['overwrite_destination_on_rename'], reallyMove = !Config['atomic_move'])
+        cnamer.newName(newName, force = Config['overwrite_destination_on_rename'], reallyMove = not Config['atomic_move'])
     except OSError, e:
         warn(e)
 
