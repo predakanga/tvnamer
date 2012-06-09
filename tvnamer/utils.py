@@ -249,7 +249,7 @@ class FileFinder(object):
             if os.path.isfile(newpath):
                 if not self._checkExtension(subf):
                     continue
-                elif self._blacklistedFilename(subf):
+                elif self._blacklistedFilename(newpath):
                     continue
                 else:
                     allfiles.append(newpath)
