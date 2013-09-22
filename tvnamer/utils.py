@@ -945,7 +945,7 @@ def same_partition(f1, f2):
 
 
 def delete_file(fpath):
-    raise NotImplementedError("delete_file not yet implimented")
+    return os.unlink(fpath)
 
 
 class Renamer(object):
