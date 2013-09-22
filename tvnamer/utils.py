@@ -1092,4 +1092,9 @@ class Renamer(object):
                 p("Deleting %s" % (self.filename))
                 delete_file(self.filename)
 
+        # Finally, if we were asked to make a link back and there's nothing left behind, create the link
+        if linkBack and not os.path.isfile(self.filename):
+            p("creating link back from %s to %s" % (new_fullpath, self.filename))
+            os.symlink(new_fullpath, self.filename)
+
         self.filename = new_fullpath

@@ -107,7 +107,7 @@ def doMoveFile(cnamer, destDir = None, destFilepath = None, getPathPreview = Fal
         raise ValueError("Config value for move_files_destination cannot be None if move_files_enabled is True")
 
     try:
-        if Config['link_files_enable']:
+        if Config['link_files_enable'] and not Config['move_files_enable']:
             return cnamer.linkPath(
                 new_path = destDir,
                 new_fullpath = destFilepath,
@@ -120,7 +120,8 @@ def doMoveFile(cnamer, destDir = None, destFilepath = None, getPathPreview = Fal
                 new_fullpath = destFilepath,
                 always_move = Config['always_move'],
                 getPathPreview = getPathPreview,
-                force = Config['overwrite_destination_on_move'])
+                force = Config['overwrite_destination_on_move'],
+                linkBack = Config['link_files_enable'])
 
     except OSError, e:
         warn(e)
@@ -219,7 +220,7 @@ def processFile(tvdb_instance, episode):
     
             if Config['always_rename']:
                 doRenameFile(cnamer, newName)
-                if Config['move_files_enable']:
+                if Config['move_files_enable'] or Config['link_files_enable']:
                     if Config['move_files_destination_is_filepath']:
                         doMoveFile(cnamer = cnamer, destFilepath = getMoveDestination(episode))
                     else:
@@ -246,7 +247,7 @@ def processFile(tvdb_instance, episode):
             if shouldRename:
                 doRenameFile(cnamer, newName)
 
-    if shouldRename and Config['move_files_enable']:
+    if shouldRename and (Config['move_files_enable'] or Config['link_files_enable']):
         newPath = getMoveDestination(episode)
         if Config['move_files_destination_is_filepath']:
             doMoveFile(cnamer = cnamer, destFilepath = newPath, getPathPreview = True)
